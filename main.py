@@ -10,6 +10,7 @@ from tensorflow.keras import layers
 import time
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # This method returns a helper function to compute cross entropy loss
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -153,8 +154,8 @@ def run():
         for epoch in range(epochs):
             start = time.time()
 
-            # for image_batch in dataset:
-            #     train_step(image_batch)
+            for image_batch in dataset:
+                train_step(image_batch)
 
             # Produce images for the GIF as you go
             # display.clear_output(wait=True)
