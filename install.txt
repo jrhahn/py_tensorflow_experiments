@@ -1,7 +1,7 @@
-gym==0.21.0
-imageio==2.9.0
-matplotlib==3.1.0
-numpy==1.19.3
-pydot==1.4.2
-tensorflow==2.5.0
+gym
+imageio
+matplotlib
+numpy
+pydot
+tensorflow
 tensorflow-docs @ git+https://github.com/tensorflow/docs@5299b70f9664152e5058078e2b7bb4241ae155eb
