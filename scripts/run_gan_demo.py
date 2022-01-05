@@ -1,13 +1,9 @@
-import tensorflow as tf
-
-import glob
-import imageio
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import PIL
-from tensorflow.keras import layers
 import time
+
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras import layers
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'

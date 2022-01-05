@@ -362,7 +362,7 @@ def run():
     # for example_input, example_target in test_dataset.take(1):
     #     generate_images(generator, example_input, example_target)
 
-    log_dir = "logs/"
+    log_dir = "../logs/"
 
     summary_writer = tf.summary.create_file_writer(
         log_dir + "fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
