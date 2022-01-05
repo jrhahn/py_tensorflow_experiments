@@ -117,7 +117,7 @@ def run():
                                      generator=generator,
                                      discriminator=discriminator)
 
-    EPOCHS = 50
+    EPOCHS = 500
     noise_dim = 100
     num_examples_to_generate = 16
 

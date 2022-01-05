@@ -7,6 +7,9 @@ import datetime
 
 from matplotlib import pyplot as plt
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 # The facade training set consist of 400 images
 BUFFER_SIZE = 400
 # The batch size of 1 produced better results for the U-Net in the original pix2pix experiment
@@ -430,7 +433,7 @@ def run():
             if (step + 1) % 5000 == 0:
                 checkpoint.save(file_prefix=checkpoint_prefix)
 
-    fit(train_dataset, test_dataset, steps=40000)
+    fit(train_dataset, test_dataset, steps=400000)
 
 
 if __name__ == '__main__':
