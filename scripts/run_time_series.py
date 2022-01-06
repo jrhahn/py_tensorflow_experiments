@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,8 @@ from base_line import Baseline
 from data_types.training_result import TrainingResult
 from data_types.training_set import TrainingSet
 from window_generator import WindowGenerator
+
+MAX_EPOCHS = 20
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -92,8 +95,8 @@ def prepare_sets(df: pd.DataFrame) -> TrainingSet:
     df_std = (df - train_mean) / train_std
     df_std = df_std.melt(var_name='Column', value_name='Normalized')
     plt.figure(figsize=(12, 6))
-    ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
-    _ = ax.set_xticklabels(df.keys(), rotation=90)
+    # ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
+    # _ = ax.set_xticklabels(df.keys(), rotation=90)
 
     return TrainingSet(
         training=train_df,
@@ -180,6 +183,214 @@ def test_baseline(
     return result
 
 
+def compile_and_fit(model, window, patience=2):
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                      patience=patience,
+                                                      mode='min')
+
+    model.compile(loss=tf.losses.MeanSquaredError(),
+                  optimizer=tf.optimizers.Adam(),
+                  metrics=[tf.metrics.MeanAbsoluteError()])
+
+    history = model.fit(window.train, epochs=MAX_EPOCHS,
+                        validation_data=window.val,
+                        callbacks=[early_stopping])
+    return history
+
+
+def test_linear(
+        training_set: TrainingSet
+) -> TrainingResult:
+    ## LINEAR
+    linear = tf.keras.Sequential([
+        tf.keras.layers.Dense(units=1)
+    ])
+
+    single_step_window = WindowGenerator(
+        input_width=1,
+        label_width=1,
+        shift=1,
+        training_set=training_set,
+        label_columns=['T (degC)']
+    )
+
+    print('Input shape:', single_step_window.example[0].shape)
+    print('Output shape:', linear(single_step_window.example[0]).shape)
+
+    compile_and_fit(linear, single_step_window)
+
+    wide_window = WindowGenerator(
+        input_width=24,
+        label_width=24,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+    wide_window.plot(linear)
+
+    return TrainingResult(
+        performance=linear.evaluate(single_step_window.test, verbose=0),
+        validation_performance=linear.evaluate(single_step_window.val)
+    )
+
+
+def test_dense(
+        training_set: TrainingSet
+) -> TrainingResult:
+    dense = tf.keras.Sequential([
+        tf.keras.layers.Dense(units=64, activation='relu'),
+        tf.keras.layers.Dense(units=64, activation='relu'),
+        tf.keras.layers.Dense(units=1)
+    ])
+
+    single_step_window = WindowGenerator(
+        input_width=1,
+        label_width=1,
+        shift=1,
+        training_set=training_set,
+        label_columns=['T (degC)']
+    )
+
+    compile_and_fit(dense, single_step_window)
+
+    return TrainingResult(
+        validation_performance=dense.evaluate(single_step_window.val),
+        performance=dense.evaluate(single_step_window.test, verbose=0)
+    )
+
+
+def test_multi_step_dense(
+        training_set: TrainingSet,
+        CONV_WIDTH: int = 3
+) -> TrainingResult:
+    conv_window = WindowGenerator(
+        input_width=CONV_WIDTH,
+        label_width=1,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    multi_step_dense = tf.keras.Sequential([
+        # Shape: (time, features) => (time*features)
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(units=32, activation='relu'),
+        tf.keras.layers.Dense(units=32, activation='relu'),
+        tf.keras.layers.Dense(units=1),
+        # Add back the time dimension.
+        # Shape: (outputs) => (1, outputs)
+        tf.keras.layers.Reshape([1, -1]),
+    ])
+
+    print('Input shape:', conv_window.example[0].shape)
+    print('Output shape:', multi_step_dense(conv_window.example[0]).shape)
+
+    compile_and_fit(multi_step_dense, conv_window)
+
+    return TrainingResult(
+        validation_performance=multi_step_dense.evaluate(conv_window.val),
+        performance=multi_step_dense.evaluate(conv_window.test, verbose=0)
+    )
+
+
+def test_multi_step_conv_net(
+        training_set: TrainingSet,
+        CONV_WIDTH: int = 3
+) -> TrainingResult:
+    conv_model = tf.keras.Sequential([
+        tf.keras.layers.Conv1D(filters=32,
+                               kernel_size=(CONV_WIDTH,),
+                               activation='relu'),
+        tf.keras.layers.Dense(units=32, activation='relu'),
+        tf.keras.layers.Dense(units=1),
+    ])
+
+    conv_window = WindowGenerator(
+        input_width=CONV_WIDTH,
+        label_width=1,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    compile_and_fit(conv_model, conv_window)
+
+    LABEL_WIDTH = 24
+    INPUT_WIDTH = LABEL_WIDTH + (CONV_WIDTH - 1)
+    wide_conv_window = WindowGenerator(
+        input_width=INPUT_WIDTH,
+        label_width=LABEL_WIDTH,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    print("Wide conv window")
+    print('Input shape:', wide_conv_window.example[0].shape)
+    print('Labels shape:', wide_conv_window.example[1].shape)
+    print('Output shape:', conv_model(wide_conv_window.example[0]).shape)
+
+    wide_conv_window.plot(conv_model)
+
+    return TrainingResult(
+        validation_performance=conv_model.evaluate(conv_window.val),
+        performance=conv_model.evaluate(conv_window.test, verbose=0)
+    )
+
+
+def test_multi_recurrent(
+        training_set: TrainingSet
+) -> TrainingResult:
+    lstm_model = tf.keras.models.Sequential([
+        # Shape [batch, time, features] => [batch, time, lstm_units]
+        tf.keras.layers.LSTM(32, return_sequences=True),
+        # Shape => [batch, time, features]
+        tf.keras.layers.Dense(units=1)
+    ])
+
+    wide_window = WindowGenerator(
+        input_width=24,
+        label_width=24,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    print('Input shape:', wide_window.example[0].shape)
+    print('Output shape:', lstm_model(wide_window.example[0]).shape)
+
+    compile_and_fit(lstm_model, wide_window)
+
+    wide_window.plot(lstm_model)
+
+    return TrainingResult(
+        validation_performance=lstm_model.evaluate(wide_window.val),
+        performance=lstm_model.evaluate(wide_window.test, verbose=0)
+    )
+
+
+def plot_single_output(
+        results: Dict[str, TrainingResult]
+):
+    plt.figure()
+    x = np.arange(len(results))
+    width = 0.3
+    # metric_name = 'mean_absolute_error'
+    metric_index = results.values()[-1].metrics_names.index('mean_absolute_error')
+    val_mae = [v.validation_performance[metric_index] for v in results.values()]
+    test_mae = [v.performance[metric_index] for v in results.values()]
+
+    plt.ylabel('mean_absolute_error [T (degC), normalized]')
+    plt.bar(x - 0.17, val_mae, width, label='Validation')
+    plt.bar(x + 0.17, test_mae, width, label='Test')
+    plt.xticks(
+        ticks=x,
+        labels=results.keys(),
+        rotation=45
+    )
+    _ = plt.legend()
+
+
 def run():
     data = get_data()
     data = clean_data(data)
@@ -187,7 +398,18 @@ def run():
 
     training_set = prepare_sets(data)
 
-    test_baseline(training_set=training_set)
+    results = {
+        'baseline': test_baseline(training_set=training_set),
+        'linear': test_linear(training_set=training_set),
+        'dense': test_dense(training_set=training_set),
+        'multi-step-dense': test_multi_step_dense(training_set=training_set),
+        'multi-step-conv': test_multi_step_conv_net(training_set=training_set),
+        'multi-step-recurrent': test_multi_recurrent(training_set=training_set)
+    }
+
+    print(results)
+
+    plot_single_output(results=results)
 
 
 if __name__ == '__main__':
