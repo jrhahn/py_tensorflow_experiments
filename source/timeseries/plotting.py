@@ -28,7 +28,10 @@ def plot_single_output(
     )
     _ = plt.legend()
 
+    plt.gcf().subplots_adjust(bottom=0.25)
+
     plt.savefig(path_save / "results_single.png")
+    plt.close()
 
 
 def plot_multi_output(
@@ -48,7 +51,10 @@ def plot_multi_output(
     plt.ylabel('MAE (average over all outputs)')
     _ = plt.legend()
 
+    plt.gcf().subplots_adjust(bottom=0.25)
+
     plt.savefig(path_save / "results_multi_output.png")
+    plt.close()
 
 
 def plot_multi_output_multi_step(
@@ -68,4 +74,7 @@ def plot_multi_output_multi_step(
     plt.ylabel(f'MAE (average over all times and outputs)')
     _ = plt.legend()
 
+    plt.gcf().subplots_adjust(bottom=0.25)
+
     plt.savefig(path_save / "results_multi_output_multi_step.png")
+    plt.close()

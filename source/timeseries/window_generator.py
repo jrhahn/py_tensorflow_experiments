@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -14,9 +15,6 @@ class WindowGenerator:
             label_width: int,
             shift: int,
             training_set: TrainingSet,
-            # train_df: pd.DataFrame,
-            # val_df: pd.DataFrame,
-            # test_df: pd.DataFrame,
             label_columns: List[str] = None):
         # Store the raw data.
         self.train_df = training_set.training
@@ -45,7 +43,12 @@ class WindowGenerator:
         self.labels_slice = slice(self.label_start, None)
         self.label_indices = np.arange(self.total_window_size)[self.labels_slice]
 
-    def plot(self, model=None, plot_col='T (degC)', max_subplots=3):
+    def plot(self,
+             model=None,
+             plot_col: str = 'T (degC)',
+             max_subplots: int = 3,
+             path_save: Path = None
+             ):
         inputs, labels = self.example
         plt.figure(figsize=(12, 8))
         plot_col_index = self.column_indices[plot_col]
@@ -76,6 +79,7 @@ class WindowGenerator:
                 plt.legend()
 
         plt.xlabel('Time [h]')
+        plt.close()
 
     def split_window(self, features):
         inputs = features[:, self.input_slice, :]
@@ -134,4 +138,5 @@ class WindowGenerator:
             result = next(iter(self.train))
             # And cache it for next time
             self._example = result
+
         return result

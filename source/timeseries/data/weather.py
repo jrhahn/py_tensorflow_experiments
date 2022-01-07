@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import tensorflow as tf
-from matplotlib import pyplot as plt
 
 from data_types.training_set import TrainingSet
 
@@ -17,10 +16,6 @@ def get_data() -> pd.DataFrame:
     df = pd.read_csv(csv_path)
     # Slice [start:stop:step], starting from index 5 take every 6th record.
     df = df[5::6]
-
-    # date_time = pd.to_datetime(df.pop('Date Time'), format='%d.%m.%Y %H:%M:%S')
-
-    # return csv_path
 
     return df
 
@@ -40,7 +35,7 @@ def prepare_sets(df: pd.DataFrame) -> TrainingSet:
 
     df_std = (df - train_mean) / train_std
     df_std = df_std.melt(var_name='Column', value_name='Normalized')
-    plt.figure(figsize=(12, 6))
+    # plt.figure(figsize=(12, 6))
     # ax = sns.violinplot(x='Column', y='Normalized', data=df_std)
     # _ = ax.set_xticklabels(df.keys(), rotation=90)
 
