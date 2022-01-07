@@ -10,7 +10,7 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_baseline_multi_output(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str]
 ) -> TrainingResult:
     baseline = Baseline()
     baseline.compile(
@@ -22,7 +22,7 @@ def evaluate_baseline_multi_output(
         input_width=24,
         label_width=24,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

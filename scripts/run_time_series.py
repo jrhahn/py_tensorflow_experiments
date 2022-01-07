@@ -1,6 +1,7 @@
 from repository import RepositoryInfo
 from timeseries.data.pre_processing import clean_data, transform_data
-from timeseries.data.weather import get_data, prepare_sets
+from timeseries.data import weather, crypto
+from timeseries.data.common import prepare_sets
 from timeseries.multi_output.baseline import evaluate_baseline_multi_output
 from timeseries.multi_output.dense import evaluate_dense_multi_output
 from timeseries.multi_output.lstm import evaluate_lstm_multi_output
@@ -24,19 +25,46 @@ from timeseries.single.linear import evaluate_linear
 def run():
     repo_info = RepositoryInfo(sub_folder_save='plots')
 
-    data = get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
+    target_columns = ['T (degC)']
+
+    # weather data
+    data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
     data = clean_data(data)
     data = transform_data(data)
+
+    # crypto data
+    # data = crypto.get_data(
+    #     path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
+    #     path_save=repo_info.path_save
+    # )
 
     training_set = prepare_sets(data)
 
     results_single = {
-        'baseline': evaluate_baseline(training_set=training_set),
-        'linear': evaluate_linear(training_set=training_set),
-        'dense': evaluate_dense(training_set=training_set),
-        'multi-step-dense': evaluate_multi_step_dense(training_set=training_set),
-        'multi-step-conv': evaluate_multi_step_conv_net(training_set=training_set),
-        'multi-step-recurrent': evaluate_multi_step_recurrent(training_set=training_set)
+        'baseline': evaluate_baseline(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'linear': evaluate_linear(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'dense': evaluate_dense(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'multi-step-dense': evaluate_multi_step_dense(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'multi-step-conv': evaluate_multi_step_conv_net(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'multi-step-recurrent': evaluate_multi_step_recurrent(
+            training_set=training_set,
+            label_columns=target_columns
+        )
     }
 
     plot_single_output(
@@ -45,10 +73,22 @@ def run():
     )
 
     results_multi_output = {
-        'baseline': evaluate_baseline_multi_output(training_set=training_set),
-        'dense': evaluate_dense_multi_output(training_set=training_set),
-        'lstm': evaluate_lstm_multi_output(training_set=training_set),
-        'residual_lstm': evaluate_residual_lstm_multi_output(training_set=training_set)
+        'baseline': evaluate_baseline_multi_output(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'dense': evaluate_dense_multi_output(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'lstm': evaluate_lstm_multi_output(
+            training_set=training_set,
+            label_columns=target_columns
+        ),
+        'residual_lstm': evaluate_residual_lstm_multi_output(
+            training_set=training_set,
+            label_columns=target_columns
+        )
     }
 
     plot_multi_output(

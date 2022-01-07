@@ -10,7 +10,7 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_linear(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str]
 ) -> TrainingResult:
     linear = tf.keras.Sequential([
         tf.keras.layers.Dense(units=1)

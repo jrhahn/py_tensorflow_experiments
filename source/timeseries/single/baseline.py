@@ -10,11 +10,11 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_baseline(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str]
 ) -> TrainingResult:
     column_indices = {name: i for i, name in enumerate(training_set.training.columns)}
 
-    baseline = Baseline(label_index=column_indices['T (degC)'])
+    baseline = Baseline(label_index=column_indices[label_columns[0]])
 
     baseline.compile(
         loss=tf.losses.MeanSquaredError(),

@@ -10,14 +10,14 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_lstm_multi_output(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str]
 ) -> TrainingResult:
     wide_window = WindowGenerator(
         input_width=24,
         label_width=24,
         shift=1,
         training_set=training_set,
-        label_columns=label_columns # todo unsure if this is required
+        label_columns=label_columns  # todo unsure if this is required
     )
 
     lstm_model = tf.keras.models.Sequential([
