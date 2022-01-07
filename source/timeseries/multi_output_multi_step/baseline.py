@@ -21,9 +21,13 @@ def evaluate_baseline_multi_output_multi_step(
         training_set=training_set
     )
 
+    evaluation = last_baseline.evaluate(multi_window.val)
+
+    metric_index = last_baseline.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=last_baseline.evaluate(multi_window.val),
-        performance=last_baseline.evaluate(multi_window.test, verbose=0)
+        validation_performance=evaluation[metric_index],
+        performance=last_baseline.evaluate(multi_window.test, verbose=0)[metric_index]
     )
 
     # multi_window.plot(last_baseline)

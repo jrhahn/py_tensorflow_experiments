@@ -30,9 +30,11 @@ def evaluate_lstm_multi_output_multi_step(
 
     compile_and_fit(multi_lstm_model, multi_window)
 
+    metric_index = multi_lstm_model.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=multi_lstm_model.evaluate(multi_window.val),
-        performance=multi_lstm_model.evaluate(multi_window.test, verbose=0)
+        validation_performance=multi_lstm_model.evaluate(multi_window.val)[metric_index],
+        performance=multi_lstm_model.evaluate(multi_window.test, verbose=0)[metric_index]
     )
 
     # multi_window.plot(multi_lstm_model)

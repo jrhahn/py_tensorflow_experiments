@@ -34,9 +34,11 @@ def evaluate_linear_multi_output_multi_step(
 
     compile_and_fit(multi_linear_model, multi_window)
 
+    metric_index = multi_linear_model.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=multi_linear_model.evaluate(multi_window.val),
-        performance=multi_linear_model.evaluate(multi_window.test, verbose=0)
+        validation_performance=multi_linear_model.evaluate(multi_window.val)[metric_index],
+        performance=multi_linear_model.evaluate(multi_window.test, verbose=0)[metric_index]
     )
     # multi_val_performance['Linear'] =
     # multi_performance['Linear'] =
