@@ -44,8 +44,8 @@ class WindowGenerator:
         self.label_indices = np.arange(self.total_window_size)[self.labels_slice]
 
     def plot(self,
+             plot_col: str,
              model=None,
-             plot_col: str = 'T (degC)',
              max_subplots: int = 3,
              path_save: Path = None
              ):

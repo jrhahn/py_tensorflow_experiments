@@ -46,7 +46,10 @@ def evaluate_multi_step_conv_net(
     print('Labels shape:', wide_conv_window.example[1].shape)
     print('Output shape:', conv_model(wide_conv_window.example[0]).shape)
 
-    wide_conv_window.plot(conv_model)
+    wide_conv_window.plot(
+        model=conv_model,
+        plot_col=label_columns[0]
+    )
 
     metric_index = conv_model.metrics_names.index('mean_absolute_error')
 

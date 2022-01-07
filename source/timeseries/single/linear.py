@@ -36,7 +36,10 @@ def evaluate_linear(
         label_columns=label_columns,
         training_set=training_set
     )
-    wide_window.plot(linear)
+    wide_window.plot(
+        model=linear,
+        plot_col=label_columns[0]
+    )
 
     metric_index = linear.metrics_names.index('mean_absolute_error')
 

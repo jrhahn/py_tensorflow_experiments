@@ -25,18 +25,18 @@ from timeseries.single.linear import evaluate_linear
 def run():
     repo_info = RepositoryInfo(sub_folder_save='plots')
 
-    target_columns = ['T (degC)']
-
-    # weather data
-    data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
-    data = clean_data(data)
-    data = transform_data(data)
+    # # weather data
+    # data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
+    # data = clean_data(data)
+    # data = transform_data(data)
+    # target_columns = ['T (degC)']
 
     # crypto data
-    # data = crypto.get_data(
-    #     path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
-    #     path_save=repo_info.path_save
-    # )
+    data = crypto.get_data(
+        path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
+        path_save=repo_info.path_save
+    )
+    target_columns = ['close']
 
     training_set = prepare_sets(data)
 

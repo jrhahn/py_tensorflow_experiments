@@ -32,7 +32,10 @@ def evaluate_multi_step_recurrent(
 
     compile_and_fit(lstm_model, wide_window)
 
-    wide_window.plot(lstm_model)
+    wide_window.plot(
+        model=lstm_model,
+        plot_col=label_columns[0]
+    )
 
     metric_index = lstm_model.metrics_names.index('mean_absolute_error')
 

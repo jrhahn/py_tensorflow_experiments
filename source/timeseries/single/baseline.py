@@ -46,6 +46,9 @@ def evaluate_baseline(
         training_set=training_set
     )
 
-    wide_window.plot(baseline)
+    wide_window.plot(
+        model=baseline,
+        plot_col=label_columns[0]
+    )
 
     return result
