@@ -39,17 +39,16 @@ def run():
         'multi-step-recurrent': evaluate_multi_step_recurrent(training_set=training_set)
     }
 
-    print(results_single)
     plot_single_output(
         results=results_single,
         path_save=repo_info.path_save
     )
 
     results_multi_output = {
-        'baseline_multi_output': evaluate_baseline_multi_output(training_set=training_set),
-        'dense_multi_output': evaluate_dense_multi_output(training_set=training_set),
-        'lstm_multi_output': evaluate_lstm_multi_output(training_set=training_set),
-        'residual_lstm_multi_output': evaluate_residual_lstm_multi_output(training_set=training_set)
+        'baseline': evaluate_baseline_multi_output(training_set=training_set),
+        'dense': evaluate_dense_multi_output(training_set=training_set),
+        'lstm': evaluate_lstm_multi_output(training_set=training_set),
+        'residual_lstm': evaluate_residual_lstm_multi_output(training_set=training_set)
     }
 
     plot_multi_output(
@@ -58,25 +57,25 @@ def run():
     )
 
     results_multi_output_multi_step = {
-        'baseline_multi_output_multi_step': evaluate_baseline_multi_output_multi_step(
+        'baseline': evaluate_baseline_multi_output_multi_step(
             training_set=training_set
         ),
-        'repeat_baseline_multi_output_multi_step': evaluate_repeat_baseline_multi_output_multi_step(
+        'repeat_baseline': evaluate_repeat_baseline_multi_output_multi_step(
             training_set=training_set
         ),
-        'linear_multi_output_multi_step': evaluate_linear_multi_output_multi_step(
+        'linear': evaluate_linear_multi_output_multi_step(
             training_set=training_set
         ),
-        'dense_multi_output_multi_step': evaluate_dense_multi_output_multi_step(
+        'dense': evaluate_dense_multi_output_multi_step(
             training_set=training_set
         ),
-        'conv_multi_output_multi_step': evaluate_conv_multi_output_multi_step(
+        'conv': evaluate_conv_multi_output_multi_step(
             training_set=training_set
         ),
-        'lstm_multi_output_multi_step': evaluate_lstm_multi_output_multi_step(
+        'lstm': evaluate_lstm_multi_output_multi_step(
             training_set=training_set
         ),
-        'ar_lstm_multi_output_multi_step': evaluate_ar_lstm_multi_output_multi_step(
+        'ar_lstm': evaluate_ar_lstm_multi_output_multi_step(
             training_set=training_set
         )
     }
