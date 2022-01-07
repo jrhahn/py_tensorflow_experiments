@@ -399,10 +399,12 @@ def test_baseline_multi_output(
         training_set=training_set
     )
 
+    evaluation = baseline.evaluate(wide_window.val)
+
     metric_index = baseline.metrics_names.index('mean_absolute_error')
 
     return TrainingResult(
-        validation_performance=baseline.evaluate(wide_window.val)[metric_index],
+        validation_performance=evaluation[metric_index],
         performance=baseline.evaluate(wide_window.test, verbose=0)[metric_index]
     )
 
@@ -438,7 +440,11 @@ def test_lstm_multi_output(
         training_set: TrainingSet
 ) -> TrainingResult:
     wide_window = WindowGenerator(
-        input_width=24, label_width=24, shift=1)
+        input_width=24,
+        label_width=24,
+        shift=1,
+        training_set=training_set
+    )
 
     lstm_model = tf.keras.models.Sequential([
         # Shape [batch, time, features] => [batch, time, lstm_units]
@@ -490,7 +496,7 @@ def test_residual_lstm_multi_output(
 
 def plot_single_output(
         results: Dict[str, TrainingResult]
-):
+) -> None:
     plt.figure()
     x = np.arange(len(results))
     width = 0.3
@@ -509,7 +515,26 @@ def plot_single_output(
     )
     _ = plt.legend()
 
-    plt.savefig("results.png")
+    plt.savefig("results_single.png")
+
+
+def plot_multi_output(
+        results: Dict[str, TrainingResult]
+) -> None:
+    x = np.arange(len(results))
+    width = 0.3
+
+    val_mae = [v.validation_performance for v in results.values()]
+    test_mae = [v.performance for v in results.values()]
+
+    plt.bar(x - 0.17, val_mae, width, label='Validation')
+    plt.bar(x + 0.17, test_mae, width, label='Test')
+    plt.xticks(ticks=x, labels=results.keys(),
+               rotation=45)
+    plt.ylabel('MAE (average over all outputs)')
+    _ = plt.legend()
+
+    plt.savefig("results_multioutput.png")
 
 
 def run():
@@ -531,14 +556,15 @@ def run():
     # print(results_single)
     # plot_single_output(results=results_single)
 
-    results_multi_output = {
-        'baseline_multi_output': test_baseline_multi_output(training_set=training_set),
-        'dense_multi_output': test_dense_multi_output(training_set=training_set),
-        'lstm_multi_output': test_lstm_multi_output(training_set=training_set),
-        'residual_lstm_multi_output': test_residual_lstm_multi_output(training_set=training_set)
-    }
-
-    print(results_multi_output)
+    # results_multi_output = {
+    #     'baseline_multi_output': test_baseline_multi_output(training_set=training_set),
+    #     'dense_multi_output': test_dense_multi_output(training_set=training_set),
+    #     'lstm_multi_output': test_lstm_multi_output(training_set=training_set),
+    #     'residual_lstm_multi_output': test_residual_lstm_multi_output(training_set=training_set)
+    # }
+    #
+    # print(results_multi_output)
+    # plot_multi_output(results_multi_output)
 
 
 if __name__ == '__main__':
