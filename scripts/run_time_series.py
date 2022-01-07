@@ -4,15 +4,15 @@ from typing import Dict
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 
 from base_line import Baseline
 from data_types.training_result import TrainingResult
 from data_types.training_set import TrainingSet
+from residual_wrapper import ResidualWrapper
 from window_generator import WindowGenerator
 
-MAX_EPOCHS = 20
+MAX_EPOCHS = 1
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -83,8 +83,6 @@ def prepare_sets(df: pd.DataFrame) -> TrainingSet:
     val_df = df[int(n * 0.7):int(n * 0.9)]
     test_df = df[int(n * 0.9):]
 
-    num_features = df.shape[1]
-
     train_mean = train_df.mean()
     train_std = train_df.std()
 
@@ -101,7 +99,8 @@ def prepare_sets(df: pd.DataFrame) -> TrainingSet:
     return TrainingSet(
         training=train_df,
         test=test_df,
-        validation=val_df
+        validation=val_df,
+        num_features=df.shape[1]
     )
 
 
@@ -165,9 +164,13 @@ def test_baseline(
         label_columns=['T (degC)']
     )
 
+    evaluation = baseline.evaluate(single_step_window.val)
+
+    metric_index = baseline.metrics_names.index('mean_absolute_error')
+
     result = TrainingResult(
-        validation_performance=baseline.evaluate(single_step_window.val),
-        performance=baseline.evaluate(single_step_window.test, verbose=0)
+        validation_performance=evaluation[metric_index],
+        performance=baseline.evaluate(single_step_window.test, verbose=0)[metric_index]
     )
 
     wide_window = WindowGenerator(
@@ -228,9 +231,11 @@ def test_linear(
     )
     wide_window.plot(linear)
 
+    metric_index = linear.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        performance=linear.evaluate(single_step_window.test, verbose=0),
-        validation_performance=linear.evaluate(single_step_window.val)
+        performance=linear.evaluate(single_step_window.test, verbose=0)[metric_index],
+        validation_performance=linear.evaluate(single_step_window.val)[metric_index]
     )
 
 
@@ -253,9 +258,11 @@ def test_dense(
 
     compile_and_fit(dense, single_step_window)
 
+    metric_index = dense.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=dense.evaluate(single_step_window.val),
-        performance=dense.evaluate(single_step_window.test, verbose=0)
+        validation_performance=dense.evaluate(single_step_window.val)[metric_index],
+        performance=dense.evaluate(single_step_window.test, verbose=0)[metric_index]
     )
 
 
@@ -287,9 +294,11 @@ def test_multi_step_dense(
 
     compile_and_fit(multi_step_dense, conv_window)
 
+    metric_index = multi_step_dense.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=multi_step_dense.evaluate(conv_window.val),
-        performance=multi_step_dense.evaluate(conv_window.test, verbose=0)
+        validation_performance=multi_step_dense.evaluate(conv_window.val)[metric_index],
+        performance=multi_step_dense.evaluate(conv_window.test, verbose=0)[metric_index]
     )
 
 
@@ -332,9 +341,11 @@ def test_multi_step_conv_net(
 
     wide_conv_window.plot(conv_model)
 
+    metric_index = conv_model.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=conv_model.evaluate(conv_window.val),
-        performance=conv_model.evaluate(conv_window.test, verbose=0)
+        validation_performance=conv_model.evaluate(conv_window.val)[metric_index],
+        performance=conv_model.evaluate(conv_window.test, verbose=0)[metric_index]
     )
 
 
@@ -363,9 +374,117 @@ def test_multi_recurrent(
 
     wide_window.plot(lstm_model)
 
+    metric_index = lstm_model.metrics_names.index('mean_absolute_error')
+
     return TrainingResult(
-        validation_performance=lstm_model.evaluate(wide_window.val),
-        performance=lstm_model.evaluate(wide_window.test, verbose=0)
+        validation_performance=lstm_model.evaluate(wide_window.val)[metric_index],
+        performance=lstm_model.evaluate(wide_window.test, verbose=0)[metric_index]
+    )
+
+
+def test_baseline_multi_output(
+        training_set: TrainingSet
+) -> TrainingResult:
+    baseline = Baseline()
+    baseline.compile(
+        loss=tf.losses.MeanSquaredError(),
+        metrics=[tf.metrics.MeanAbsoluteError()]
+    )
+
+    wide_window = WindowGenerator(
+        input_width=24,
+        label_width=24,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    metric_index = baseline.metrics_names.index('mean_absolute_error')
+
+    return TrainingResult(
+        validation_performance=baseline.evaluate(wide_window.val)[metric_index],
+        performance=baseline.evaluate(wide_window.test, verbose=0)[metric_index]
+    )
+
+
+def test_dense_multi_output(
+        training_set: TrainingSet
+) -> TrainingResult:
+    dense = tf.keras.Sequential([
+        tf.keras.layers.Dense(units=64, activation='relu'),
+        tf.keras.layers.Dense(units=64, activation='relu'),
+        tf.keras.layers.Dense(units=training_set.num_features)
+    ])
+
+    single_step_window = WindowGenerator(
+        input_width=1,
+        label_width=1,
+        shift=1,
+        training_set=training_set,
+        label_columns=['T (degC)']
+    )
+
+    compile_and_fit(dense, single_step_window)
+
+    metric_index = dense.metrics_names.index('mean_absolute_error')
+
+    return TrainingResult(
+        validation_performance=dense.evaluate(single_step_window.val)[metric_index],
+        performance=dense.evaluate(single_step_window.test, verbose=0)[metric_index]
+    )
+
+
+def test_lstm_multi_output(
+        training_set: TrainingSet
+) -> TrainingResult:
+    wide_window = WindowGenerator(
+        input_width=24, label_width=24, shift=1)
+
+    lstm_model = tf.keras.models.Sequential([
+        # Shape [batch, time, features] => [batch, time, lstm_units]
+        tf.keras.layers.LSTM(32, return_sequences=True),
+        # Shape => [batch, time, features]
+        tf.keras.layers.Dense(units=training_set.num_features)
+    ])
+
+    compile_and_fit(lstm_model, wide_window)
+
+    metric_index = lstm_model.metrics_names.index('mean_absolute_error')
+
+    return TrainingResult(
+        validation_performance=lstm_model.evaluate(wide_window.val)[metric_index],
+        performance=lstm_model.evaluate(wide_window.test, verbose=0)[metric_index]
+    )
+
+
+def test_residual_lstm_multi_output(
+        training_set: TrainingSet
+) -> TrainingResult:
+    residual_lstm = ResidualWrapper(
+        tf.keras.Sequential([
+            tf.keras.layers.LSTM(32, return_sequences=True),
+            tf.keras.layers.Dense(
+                training_set.num_features,
+                # The predicted deltas should start small.
+                # Therefore, initialize the output layer with zeros.
+                kernel_initializer=tf.initializers.zeros())
+        ]))
+
+    wide_window = WindowGenerator(
+        input_width=24,
+        label_width=24,
+        shift=1,
+        label_columns=['T (degC)'],
+        training_set=training_set
+    )
+
+    compile_and_fit(residual_lstm, wide_window)
+
+    metric_index = residual_lstm.metrics_names.index('mean_absolute_error')
+
+    return TrainingResult(
+        validation_performance=residual_lstm.evaluate(wide_window.val)[metric_index],
+        performance=residual_lstm.evaluate(wide_window.test, verbose=0)[metric_index]
     )
 
 
@@ -375,10 +494,10 @@ def plot_single_output(
     plt.figure()
     x = np.arange(len(results))
     width = 0.3
-    # metric_name = 'mean_absolute_error'
-    metric_index = results.values()[-1].metrics_names.index('mean_absolute_error')
-    val_mae = [v.validation_performance[metric_index] for v in results.values()]
-    test_mae = [v.performance[metric_index] for v in results.values()]
+    metric_name = 'mean_absolute_error'
+    # metric_index = results.values()[-1].metrics_names.index('mean_absolute_error')
+    val_mae = [v.validation_performance for v in results.values()]
+    test_mae = [v.performance for v in results.values()]
 
     plt.ylabel('mean_absolute_error [T (degC), normalized]')
     plt.bar(x - 0.17, val_mae, width, label='Validation')
@@ -390,6 +509,8 @@ def plot_single_output(
     )
     _ = plt.legend()
 
+    plt.savefig("results.png")
+
 
 def run():
     data = get_data()
@@ -398,18 +519,26 @@ def run():
 
     training_set = prepare_sets(data)
 
-    results = {
-        'baseline': test_baseline(training_set=training_set),
-        'linear': test_linear(training_set=training_set),
-        'dense': test_dense(training_set=training_set),
-        'multi-step-dense': test_multi_step_dense(training_set=training_set),
-        'multi-step-conv': test_multi_step_conv_net(training_set=training_set),
-        'multi-step-recurrent': test_multi_recurrent(training_set=training_set)
+    # results_single = {
+    #     'baseline': test_baseline(training_set=training_set),
+    #     'linear': test_linear(training_set=training_set),
+    #     'dense': test_dense(training_set=training_set),
+    #     'multi-step-dense': test_multi_step_dense(training_set=training_set),
+    #     'multi-step-conv': test_multi_step_conv_net(training_set=training_set),
+    #     'multi-step-recurrent': test_multi_recurrent(training_set=training_set)
+    # }
+
+    # print(results_single)
+    # plot_single_output(results=results_single)
+
+    results_multi_output = {
+        'baseline_multi_output': test_baseline_multi_output(training_set=training_set),
+        'dense_multi_output': test_dense_multi_output(training_set=training_set),
+        'lstm_multi_output': test_lstm_multi_output(training_set=training_set),
+        'residual_lstm_multi_output': test_residual_lstm_multi_output(training_set=training_set)
     }
 
-    print(results)
-
-    plot_single_output(results=results)
+    print(results_multi_output)
 
 
 if __name__ == '__main__':
