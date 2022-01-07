@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -7,7 +9,8 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_multi_step_recurrent(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     lstm_model = tf.keras.models.Sequential([
         # Shape [batch, time, features] => [batch, time, lstm_units]
@@ -20,7 +23,7 @@ def evaluate_multi_step_recurrent(
         input_width=24,
         label_width=24,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

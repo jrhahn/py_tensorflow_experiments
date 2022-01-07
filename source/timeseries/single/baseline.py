@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -7,7 +9,8 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_baseline(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     column_indices = {name: i for i, name in enumerate(training_set.training.columns)}
 
@@ -23,7 +26,7 @@ def evaluate_baseline(
         label_width=1,
         shift=1,
         training_set=training_set,
-        label_columns=['T (degC)']
+        label_columns=label_columns
     )
 
     evaluation = baseline.evaluate(single_step_window.val)
@@ -39,7 +42,7 @@ def evaluate_baseline(
         input_width=24,
         label_width=24,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

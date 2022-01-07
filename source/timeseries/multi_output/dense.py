@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -7,7 +9,8 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_dense_multi_output(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     dense = tf.keras.Sequential([
         tf.keras.layers.Dense(units=64, activation='relu'),
@@ -20,7 +23,7 @@ def evaluate_dense_multi_output(
         label_width=1,
         shift=1,
         training_set=training_set,
-        label_columns=['T (degC)']
+        label_columns=label_columns
     )
 
     compile_and_fit(dense, single_step_window)

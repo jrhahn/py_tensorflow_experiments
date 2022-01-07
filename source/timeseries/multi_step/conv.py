@@ -1,14 +1,17 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
 from data_types.training_set import TrainingSet
 from timeseries.build import compile_and_fit
+from timeseries.constants import CONV_WIDTH
 from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_multi_step_conv_net(
         training_set: TrainingSet,
-        CONV_WIDTH: int = 3
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     conv_model = tf.keras.Sequential([
         tf.keras.layers.Conv1D(filters=32,
@@ -22,7 +25,7 @@ def evaluate_multi_step_conv_net(
         input_width=CONV_WIDTH,
         label_width=1,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 
@@ -34,7 +37,7 @@ def evaluate_multi_step_conv_net(
         input_width=INPUT_WIDTH,
         label_width=LABEL_WIDTH,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

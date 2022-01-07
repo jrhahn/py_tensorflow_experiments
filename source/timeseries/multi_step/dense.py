@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -8,13 +10,14 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_multi_step_dense(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     conv_window = WindowGenerator(
         input_width=CONV_WIDTH,
         label_width=1,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

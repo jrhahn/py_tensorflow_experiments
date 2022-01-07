@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -8,7 +10,8 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_residual_lstm_multi_output(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     residual_lstm = ResidualWrapper(
         tf.keras.Sequential([
@@ -24,7 +27,7 @@ def evaluate_residual_lstm_multi_output(
         input_width=24,
         label_width=24,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
 

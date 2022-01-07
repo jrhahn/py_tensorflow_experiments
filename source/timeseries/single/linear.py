@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -7,9 +9,9 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_linear(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
-    ## LINEAR
     linear = tf.keras.Sequential([
         tf.keras.layers.Dense(units=1)
     ])
@@ -19,7 +21,7 @@ def evaluate_linear(
         label_width=1,
         shift=1,
         training_set=training_set,
-        label_columns=['T (degC)']
+        label_columns=label_columns
     )
 
     print('Input shape:', single_step_window.example[0].shape)
@@ -31,7 +33,7 @@ def evaluate_linear(
         input_width=24,
         label_width=24,
         shift=1,
-        label_columns=['T (degC)'],
+        label_columns=label_columns,
         training_set=training_set
     )
     wide_window.plot(linear)

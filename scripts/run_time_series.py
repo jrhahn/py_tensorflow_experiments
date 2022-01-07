@@ -22,11 +22,11 @@ from timeseries.single.linear import evaluate_linear
 
 
 def run():
-    data = get_data()
+    repo_info = RepositoryInfo(sub_folder_save='plots')
+
+    data = get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
     data = clean_data(data)
     data = transform_data(data)
-
-    repo_info = RepositoryInfo(sub_folder_save='plots')
 
     training_set = prepare_sets(data)
 

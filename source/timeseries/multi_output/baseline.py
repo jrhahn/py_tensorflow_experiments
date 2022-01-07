@@ -1,3 +1,5 @@
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -7,7 +9,8 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_baseline_multi_output(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str] = ['T (degC)']
 ) -> TrainingResult:
     baseline = Baseline()
     baseline.compile(
