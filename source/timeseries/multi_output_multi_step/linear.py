@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -8,7 +11,9 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_linear_multi_output_multi_step(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     multi_linear_model = tf.keras.Sequential(
         [
@@ -36,10 +41,15 @@ def evaluate_linear_multi_output_multi_step(
 
     metric_index = multi_linear_model.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=multi_linear_model.evaluate(multi_window.val)[metric_index],
         performance=multi_linear_model.evaluate(multi_window.test, verbose=0)[metric_index]
     )
-    # multi_val_performance['Linear'] =
-    # multi_performance['Linear'] =
-    # multi_window.plot(multi_linear_model)
+
+    multi_window.plot(
+        plot_col=label_columns[0],
+        model=multi_linear_model,
+        path_save=path_save / "multi_step_dense.jpg"
+    )
+
+    return res

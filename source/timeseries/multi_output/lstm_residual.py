@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import List
 
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -11,7 +13,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_residual_lstm_multi_output(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     residual_lstm = ResidualWrapper(
         tf.keras.Sequential([
@@ -35,7 +38,15 @@ def evaluate_residual_lstm_multi_output(
 
     metric_index = residual_lstm.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=residual_lstm.evaluate(wide_window.val)[metric_index],
         performance=residual_lstm.evaluate(wide_window.test, verbose=0)[metric_index]
     )
+
+    wide_window.plot(
+        plot_col=label_columns[0],
+        model=residual_lstm,
+        path_save=path_save / "multi_output_lstm_residual.jpg"
+    )
+
+    return res

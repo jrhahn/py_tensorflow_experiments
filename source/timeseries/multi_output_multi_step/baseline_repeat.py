@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -8,7 +11,9 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_repeat_baseline_multi_output_multi_step(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     repeat_baseline = RepeatBaseline()
     repeat_baseline.compile(
@@ -27,9 +32,15 @@ def evaluate_repeat_baseline_multi_output_multi_step(
 
     metric_index = repeat_baseline.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=evaluation[metric_index],
         performance=repeat_baseline.evaluate(multi_window.test, verbose=0)[metric_index]
     )
 
-    # multi_window.plot(repeat_baseline)
+    multi_window.plot(
+        plot_col=label_columns[0],
+        model=repeat_baseline,
+        path_save=path_save / "multi_step_dense.jpg"
+    )
+
+    return res

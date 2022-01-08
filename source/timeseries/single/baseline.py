@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import tensorflow as tf
@@ -10,7 +11,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_baseline(
         training_set: TrainingSet,
-        label_columns: List[str]
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     column_indices = {name: i for i, name in enumerate(training_set.training.columns)}
 
@@ -48,7 +50,8 @@ def evaluate_baseline(
 
     wide_window.plot(
         model=baseline,
-        plot_col=label_columns[0]
+        plot_col=label_columns[0],
+        path_save=path_save / "single_baseline.jpg"
     )
 
     return result

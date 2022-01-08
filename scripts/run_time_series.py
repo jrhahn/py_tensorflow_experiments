@@ -25,45 +25,51 @@ from timeseries.single.linear import evaluate_linear
 def run():
     repo_info = RepositoryInfo(sub_folder_save='plots')
 
-    # # weather data
-    # data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
-    # data = clean_data(data)
-    # data = transform_data(data)
-    # target_columns = ['T (degC)']
+    # weather data
+    data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
+    data = clean_data(data)
+    data = transform_data(data)
+    target_columns = ['T (degC)']
 
-    # crypto data
-    data = crypto.get_data(
-        path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
-        path_save=repo_info.path_save
-    )
-    target_columns = ['close']
+    # # crypto data
+    # data = crypto.get_data(
+    #     path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
+    #     path_save=repo_info.path_save
+    # )
+    # target_columns = ['close']
 
     training_set = prepare_sets(data)
 
     results_single = {
         'baseline': evaluate_baseline(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'linear': evaluate_linear(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'dense': evaluate_dense(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'multi-step-dense': evaluate_multi_step_dense(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'multi-step-conv': evaluate_multi_step_conv_net(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'multi-step-recurrent': evaluate_multi_step_recurrent(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         )
     }
 
@@ -75,19 +81,23 @@ def run():
     results_multi_output = {
         'baseline': evaluate_baseline_multi_output(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'dense': evaluate_dense_multi_output(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'lstm': evaluate_lstm_multi_output(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'residual_lstm': evaluate_residual_lstm_multi_output(
             training_set=training_set,
-            label_columns=target_columns
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         )
     }
 
@@ -98,25 +108,39 @@ def run():
 
     results_multi_output_multi_step = {
         'baseline': evaluate_baseline_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'repeat_baseline': evaluate_repeat_baseline_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'linear': evaluate_linear_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'dense': evaluate_dense_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'conv': evaluate_conv_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'lstm': evaluate_lstm_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         ),
         'ar_lstm': evaluate_ar_lstm_multi_output_multi_step(
-            training_set=training_set
+            training_set=training_set,
+            label_columns=target_columns,
+            path_save=repo_info.path_save
         )
     }
 

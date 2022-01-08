@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import tensorflow as tf
@@ -10,7 +11,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_linear(
         training_set: TrainingSet,
-        label_columns: List[str]
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     linear = tf.keras.Sequential([
         tf.keras.layers.Dense(units=1)
@@ -36,14 +38,18 @@ def evaluate_linear(
         label_columns=label_columns,
         training_set=training_set
     )
-    wide_window.plot(
-        model=linear,
-        plot_col=label_columns[0]
-    )
 
     metric_index = linear.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         performance=linear.evaluate(single_step_window.test, verbose=0)[metric_index],
         validation_performance=linear.evaluate(single_step_window.val)[metric_index]
     )
+
+    wide_window.plot(
+        plot_col=label_columns[0],
+        model=linear,
+        path_save=path_save / "multi_output_lstm_residual.jpg"
+    )
+
+    return res

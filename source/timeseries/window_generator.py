@@ -48,7 +48,11 @@ class WindowGenerator:
              model=None,
              max_subplots: int = 3,
              path_save: Path = None
-             ):
+             ) -> None:
+
+        if path_save is None:
+            return
+
         inputs, labels = self.example
         plt.figure(figsize=(12, 8))
         plot_col_index = self.column_indices[plot_col]
@@ -67,18 +71,19 @@ class WindowGenerator:
             if label_col_index is None:
                 continue
 
-            # plt.scatter(self.label_indices, labels[n, :, label_col_index],
-            #             edgecolors='k', label='Labels', c='#2ca02c', s=64)
+            plt.scatter(self.label_indices, labels[n, :, label_col_index],
+                        edgecolors='k', label='Labels', c='#2ca02c', s=64)
             if model is not None:
                 predictions = model(inputs)
-                # plt.scatter(self.label_indices, predictions[n, :, label_col_index],
-                #             marker='X', edgecolors='k', label='Predictions',
-                #             c='#ff7f0e', s=64)
+                plt.scatter(self.label_indices, predictions[n, :, label_col_index],
+                            marker='X', edgecolors='k', label='Predictions',
+                            c='#ff7f0e', s=64)
 
             if n == 0:
                 plt.legend()
 
         plt.xlabel('Time [h]')
+        plt.savefig(path_save)
         plt.close()
 
     def split_window(self, features):

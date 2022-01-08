@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import tensorflow as tf
@@ -11,7 +12,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_multi_step_conv_net(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     conv_model = tf.keras.Sequential([
         tf.keras.layers.Conv1D(filters=32,
@@ -53,7 +55,15 @@ def evaluate_multi_step_conv_net(
 
     metric_index = conv_model.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=conv_model.evaluate(conv_window.val)[metric_index],
         performance=conv_model.evaluate(conv_window.test, verbose=0)[metric_index]
     )
+
+    conv_window.plot(
+        plot_col=label_columns[0],
+        model=conv_model,
+        path_save=path_save / "multi_step_conv.jpg"
+    )
+
+    return res

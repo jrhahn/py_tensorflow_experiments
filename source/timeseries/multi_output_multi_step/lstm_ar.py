@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import List
+
 from data_types.training_result import TrainingResult
 from data_types.training_set import TrainingSet
 from timeseries.build import compile_and_fit
@@ -7,7 +10,9 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_ar_lstm_multi_output_multi_step(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     feedback_model = FeedBack(
         units=32,
@@ -28,9 +33,15 @@ def evaluate_ar_lstm_multi_output_multi_step(
 
     metric_index = feedback_model.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=feedback_model.evaluate(multi_window.val)[metric_index],
         performance=feedback_model.evaluate(multi_window.test, verbose=0)[metric_index]
     )
 
-    # multi_window.plot(feedback_model)
+    multi_window.plot(
+        plot_col=label_columns[0],
+        model=feedback_model,
+        path_save=path_save / "multi_step_dense.jpg"
+    )
+
+    return res

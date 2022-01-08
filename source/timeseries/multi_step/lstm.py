@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import tensorflow as tf
@@ -10,7 +11,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_multi_step_recurrent(
         training_set: TrainingSet,
-        label_columns: List[str] = ['T (degC)']
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     lstm_model = tf.keras.models.Sequential([
         # Shape [batch, time, features] => [batch, time, lstm_units]
@@ -39,7 +41,15 @@ def evaluate_multi_step_recurrent(
 
     metric_index = lstm_model.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=lstm_model.evaluate(wide_window.val)[metric_index],
         performance=lstm_model.evaluate(wide_window.test, verbose=0)[metric_index]
     )
+
+    wide_window.plot(
+        plot_col=label_columns[0],
+        model=lstm_model,
+        path_save=path_save / "multi_step_lstm.jpg"
+    )
+
+    return res

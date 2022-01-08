@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import List
+
 import tensorflow as tf
 
 from data_types.training_result import TrainingResult
@@ -8,7 +11,9 @@ from timeseries.window_generator import WindowGenerator
 
 
 def evaluate_conv_multi_output_multi_step(
-        training_set: TrainingSet
+        training_set: TrainingSet,
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     multi_conv_model = tf.keras.Sequential([
         # Shape [batch, time, features] => [batch, CONV_WIDTH, features]
@@ -33,9 +38,15 @@ def evaluate_conv_multi_output_multi_step(
 
     metric_index = multi_conv_model.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=multi_conv_model.evaluate(multi_window.val)[metric_index],
         performance=multi_conv_model.evaluate(multi_window.test, verbose=0)[metric_index]
     )
 
-    # multi_window.plot(multi_conv_model)
+    multi_window.plot(
+        plot_col=label_columns[0],
+        model=multi_conv_model,
+        path_save=path_save / "multi_step_dense.jpg"
+    )
+
+    return res

@@ -1,6 +1,8 @@
+from pathlib import Path
 from typing import List
 
 import tensorflow as tf
+from matplotlib import pyplot as plt
 
 from data_types.training_result import TrainingResult
 from data_types.training_set import TrainingSet
@@ -10,7 +12,8 @@ from timeseries.window_generator import WindowGenerator
 
 def evaluate_dense_multi_output(
         training_set: TrainingSet,
-        label_columns: List[str]
+        label_columns: List[str],
+        path_save: Path
 ) -> TrainingResult:
     dense = tf.keras.Sequential([
         tf.keras.layers.Dense(units=64, activation='relu'),
@@ -30,7 +33,15 @@ def evaluate_dense_multi_output(
 
     metric_index = dense.metrics_names.index('mean_absolute_error')
 
-    return TrainingResult(
+    res = TrainingResult(
         validation_performance=dense.evaluate(single_step_window.val)[metric_index],
         performance=dense.evaluate(single_step_window.test, verbose=0)[metric_index]
     )
+
+    single_step_window.plot(
+        plot_col=label_columns[0],
+        model=dense,
+        path_save=path_save / "multi_output_dense.jpg"
+    )
+
+    return res
