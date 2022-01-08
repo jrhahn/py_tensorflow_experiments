@@ -23,8 +23,8 @@ def get_data(
 
     timestamp_s = df['unix'] // 1000
 
-    df['Day sin'] = np.sin(timestamp_s * (2 * np.pi / day))
-    df['Day cos'] = np.cos(timestamp_s * (2 * np.pi / day))
+    # df['Day sin'] = np.sin(timestamp_s * (2 * np.pi / day))
+    # df['Day cos'] = np.cos(timestamp_s * (2 * np.pi / day))
     df['Year sin'] = np.sin(timestamp_s * (2 * np.pi / year))
     df['Year cos'] = np.cos(timestamp_s * (2 * np.pi / year))
 
