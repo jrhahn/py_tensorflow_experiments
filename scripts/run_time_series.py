@@ -1,7 +1,9 @@
+from pathlib import Path
+
 from repository import RepositoryInfo
-from timeseries.data.pre_processing import clean_data, transform_data
 from timeseries.data import weather, crypto
 from timeseries.data.common import prepare_sets
+from timeseries.data.pre_processing import clean_data, transform_data
 from timeseries.multi_output.baseline import evaluate_baseline_multi_output
 from timeseries.multi_output.dense import evaluate_dense_multi_output
 from timeseries.multi_output.lstm import evaluate_lstm_multi_output
@@ -23,20 +25,29 @@ from timeseries.single.linear import evaluate_linear
 
 
 def run():
-    repo_info = RepositoryInfo(sub_folder_save='plots')
+    # # weather data
+    # dataset = "weather"
+    # dataset = "ADAUSDT"
+    dataset = "BNBUSDT"
+    # dataset = "BTCUSDT"
+    # dataset = "DOTUSDT"
+    # dataset = "ETHUSDT"
+    # dataset = "XLMUSDT"
 
-    # weather data
-    data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
-    data = clean_data(data)
-    data = transform_data(data)
-    target_columns = ['T (degC)']
+    repo_info = RepositoryInfo(sub_folder_save=str(Path('plots') / dataset))
 
-    # # crypto data
-    # data = crypto.get_data(
-    #     path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
-    #     path_save=repo_info.path_save
-    # )
-    # target_columns = ['close']
+    if dataset == "weather":
+        data = weather.get_data(path_save=RepositoryInfo(sub_folder_save='data').path_save)
+        data = clean_data(data)
+        data = transform_data(data)
+        target_columns = ['T (degC)']
+    else:
+        data = crypto.get_data(
+            path_data=repo_info.path_tmp / 'data' / 'crypto_download_data',
+            path_save=repo_info.path_save,
+            filename=f"Binance_{dataset}_d.csv"
+        )
+        target_columns = ['close']
 
     training_set = prepare_sets(data)
 

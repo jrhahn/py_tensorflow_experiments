@@ -8,9 +8,10 @@ import seaborn as sns
 
 def get_data(
         path_data: Path,
-        path_save: Path
+        path_save: Path,
+        filename: str
 ) -> pd.DataFrame:
-    df = pd.read_csv(path_data / "Binance_ADAUSDT_d.csv", skiprows=1)
+    df = pd.read_csv(path_data / filename, skiprows=1)
     # df['date'] = pd.to_datetime(df['date'])
     # df.set_index('date', inplace=True)
     df.dropna(inplace=True)
