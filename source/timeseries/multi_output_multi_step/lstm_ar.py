@@ -41,7 +41,7 @@ def evaluate_ar_lstm_multi_output_multi_step(
     multi_window.plot(
         plot_col=label_columns[0],
         model=feedback_model,
-        path_save=path_save / "multi_step_dense.jpg"
+        path_save=path_save / "multi_output_multi_step_lstm_ar.jpg"
     )
 
     return res

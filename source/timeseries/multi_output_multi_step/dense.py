@@ -47,7 +47,7 @@ def evaluate_dense_multi_output_multi_step(
     multi_window.plot(
         plot_col=label_columns[0],
         model=multi_dense_model,
-        path_save=path_save / "multi_step_dense.jpg"
+        path_save=path_save / "multi_output_multi_step_dense.jpg"
     )
 
     return res

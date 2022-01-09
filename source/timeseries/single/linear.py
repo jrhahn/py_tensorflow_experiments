@@ -49,7 +49,7 @@ def evaluate_linear(
     wide_window.plot(
         plot_col=label_columns[0],
         model=linear,
-        path_save=path_save / "multi_output_lstm_residual.jpg"
+        path_save=path_save / "single_linear.jpg"
     )
 
     return res

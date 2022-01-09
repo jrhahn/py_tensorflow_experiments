@@ -48,7 +48,7 @@ def evaluate_dense(
     wide_window.plot(
         plot_col=label_columns[0],
         model=dense,
-        path_save=path_save / "multi_output_lstm_residual.jpg"
+        path_save=path_save / "single_dense.jpg"
     )
 
     return res

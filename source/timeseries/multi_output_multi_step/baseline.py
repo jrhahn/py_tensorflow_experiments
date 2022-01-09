@@ -38,7 +38,7 @@ def evaluate_baseline_multi_output_multi_step(
     multi_window.plot(
         plot_col=label_columns[0],
         model=last_baseline,
-        path_save=path_save / "multi_step_dense.jpg"
+        path_save=path_save / "multi_output_multi_step_baseline.jpg"
     )
 
     return res
